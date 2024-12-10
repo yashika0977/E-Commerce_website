@@ -1,10 +1,14 @@
+
 import './AddProduct.css';
 import upload_area from '../../assets/upload_area.svg';
 import { useState } from 'react';
+import { toast , ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AddProduct = () => {
   const [image, setImage] = useState(false);
   const [productDetails, setProductDetails] = useState({
+    id:"",
     name: "",
     image: "",
     category: "women",
@@ -14,33 +18,45 @@ const AddProduct = () => {
 
   const imageHandler = (e) => {
     setImage(e.target.files[0]);
-  }
+  };
 
   const changeHandler = (e) => {
     setProductDetails({ ...productDetails, [e.target.name]: e.target.value });
-  }
+  };
 
-  const addProductHandler = async () => {
-    // You can add your fetch request here for adding the product
-    console.log(productDetails);
+  const Add_Product = async () => {
     let responseData;
     let formData = new FormData();
     formData.append('product', image);
 
-    await fetch('http://localhost:4001/product/upload', {
+    await fetch('http://localhost:4000/product/upload', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
       },
       body: formData,
-    })
-    .then((resp) => resp.json())
-    .then((data) => { responseData = data });
+    }).then((resp) => resp.json())
+      .then((data) => { responseData = data });
 
     if (responseData.success) {
-      productDetails.image = responseData.image_url;
+      setProductDetails((prevDetails) => ({
+        ...prevDetails,
+        image: responseData.image
+      }));
+      console.log({
+        ...productDetails,
+        image: responseData.image
+      });
+
+      // Show success toast
+      toast.success("Product added successfully!",{
+        autoClose:500
+      })
+    } else {
+      // Show error toast if upload fails
+      toast.error("Failed to add product. Please try again.");
     }
-  }
+  };
 
   return (
     <div className='add-product'>
@@ -60,7 +76,7 @@ const AddProduct = () => {
           <input
             value={productDetails.old_price}
             onChange={changeHandler}
-            type='text'
+          type='text'
             name='old_price'
             placeholder='Type here'
           />
@@ -91,23 +107,14 @@ const AddProduct = () => {
       </div>
       <div className="addproduct-itemfield">
         <label htmlFor="file-input">
-          <img
-            src={image ? URL.createObjectURL(image) : upload_area}
-            className='addproduct-thumbnail-img'
-            alt='Product Thumbnail'
-          />
+          <img src={image ? URL.createObjectURL(image) : upload_area} className='addproduct-thumbnail-img' alt='Product Thumbnail' />
         </label>
-        <input
-          onChange={imageHandler}
-          type="file"
-          name='image'
-          id='file-input'
-          hidden
-        />
+        <input onChange={imageHandler} type="file" name='image' id='file-input' hidden />
       </div>
-      <button onClick={addProductHandler} className='addproduct-btn'>ADD</button>
+      <button onClick={Add_Product} className='addproduct-btn'>ADD</button>
+      <ToastContainer  position='top-center'/>
     </div>
   );
-}
+};
 
 export default AddProduct;

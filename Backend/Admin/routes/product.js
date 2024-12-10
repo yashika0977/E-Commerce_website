@@ -1,4 +1,4 @@
-// product.js
+
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/product");
@@ -24,18 +24,30 @@ router.use('/images',express.static('upload/images'))
 router.post("/upload",upload.single('product'),(req,res)=>{
   res.json({
     success:1,
+
     image:`http://localhost:4000/images/${req.file.filename}`
+
   })
 }) 
 
 // Endpoint to add a new product
+
+
 router.post('/addproduct', async (req, res) => {
-  try { 
-    let products =await Product.find({});
+  try {
+
+    // let products =await Product.find({});
+
+    // Log the incoming request body for debugging 
+    console.log("Received request body:", req.body);
+
     const { id, name, category, image, new_price, old_price } = req.body;
     if (!id || !name || !category || !image || !new_price || !old_price) {
-      return res.status(400).json({ errors: "Please provide all required fields" });
+      console.log("Validation failed: Missing fields", { id, name, category, image, new_price, old_price });
+      return res.status(400).json({errors: "Please provide all required fields" });
     }
+    const newProduct = await Product.create({ id , name, category, image, new_price, old_price });
+
 
     const newProduct = await Product.create({ id, name, category, image, new_price, old_price });
     res.status(201).json({ success: true, message: "Product added successfully", product: newProduct });  
@@ -49,7 +61,7 @@ router.post('/addproduct', async (req, res) => {
 
 
 // Endpoint to get all products 
-router.get('/', async (req, res) => {
+router.get('/allproducts', async (req, res) => {
   try {
     const products = await Product.find();
     res.status(200).json(products);
@@ -75,7 +87,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Endpoint to update product by ID (Patch)
+
 
 router.patch('/:id', async (req, res) => {
   try {
@@ -110,3 +122,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
